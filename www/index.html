@@ -1,0 +1,14 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1520"><title>VideoChat Pro</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<div id="app"><header><div class="logo"></div><h1 id="ttl">Contactos</h1><button id="addTop" class="ib" data-act="add" aria-label="Añadir"></button></header>
+<main id="view"></main>
+<nav><button data-tab="contacts"></button><button data-tab="recents"></button><button data-tab="keypad"></button><button data-tab="settings"></button></nav></div>
+<div id="perm" class="ov hide"><div class="box"><div class="big"></div><h2>Permitir cámara y micrófono</h2><p id="permTx">VideoChat Pro necesita acceso a tu cámara y micrófono para hacer videollamadas.</p><button class="btn" id="permBtn">Permitir acceso</button></div></div>
+<div id="call" class="hide"><video id="rv" playsinline></video><video id="lv" playsinline muted autoplay></video>
+<div class="top"><div class="av" id="cAv"></div><div id="cName"></div><div id="cSt"></div></div>
+<div class="ctl"><button data-c="mic"></button><button data-c="cam"></button><button data-c="flip"></button><button data-c="spk"></button><button data-c="end" class="end"></button></div></div>
+<div id="modal" class="ov hide"></div><div id="toast"></div>
+<script src="app.js"></script></body></html>
