@@ -6,7 +6,11 @@ const D=Object.assign({contacts:[],recents:[]},JSON.parse(localStorage.getItem('
 const save=()=>localStorage.setItem('vcp',JSON.stringify(D));
 let tab='contacts',q='',kd='',stream,facing='user',bag=[],last=-1,call=null,ac,ringT;
 const T={contacts:['Contactos','users'],recents:['Recientes','clock'],keypad:['Teclado','grid'],settings:['Ajustes','gear']};
+const av=n=>`<div class="av" style="--h:${hue(n)}">${ini(n)}</div>`;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LT={2:'ABC',3:'DEF',4:'GHI',5:'JKL',6:'MNO',7:'PQRS',8:'TUV',9:'WXYZ'},LB={mic:'Micro',cam:'Cámara',flip:'Girar',spk:'Altavoz',end:'Colgar'};
+const hue=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%360;return h};
+const cbtn=(b,n,x='')=>b.innerHTML=ico(n,x)+'<i>'+LB[b.dataset.c]+'</i>';
 const ini=n=>(n.trim()[0]||'#').toUpperCase();
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2600)}
 function theme(){const t=D.s.theme;document.documentElement.dataset.theme=t==='auto'?(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'):t}
@@ -14,16 +18,17 @@ function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60)
 function when(t){const d=new Date(t),n=new Date();return (d.toDateString()===n.toDateString()?'Hoy':d.toLocaleDateString())+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
 function render(){
  $('#ttl').textContent=T[tab][0];$('#addTop').innerHTML=ico('plus');$('#addTop').style.display=tab==='contacts'?'':'none';
- $$('nav button').forEach(b=>{b.className=b.dataset.tab===tab?'on':'';b.innerHTML=ico(T[b.dataset.tab][1])});
+ $$('nav button').forEach(b=>{b.className=b.dataset.tab===tab?'on':'';b.innerHTML=ico(T[b.dataset.tab][1])+'<i>'+T[b.dataset.tab][0]+'</i>'});
  const v=$('#view');
  if(tab==='contacts'){
   const l=D.contacts.filter(c=>(c.name+c.num).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
-  v.innerHTML=`<input class="search" id="q" placeholder="Buscar contactos" value="${esc(q)}">`+(l.length?l.map(c=>`<div class="row"><div class="av">${ini(c.name)}</div><div class="t" data-act="edit" data-id="${c.id}"><b>${esc(c.name)}</b><small>${esc(c.num)}</small></div><button class="cb" data-act="call" data-n="${esc(c.name)}" data-u="${esc(c.num)}">${ico('video')}</button></div>`).join(''):`<div class="empty">${D.contacts.length?'Sin resultados':'Aún no tienes contactos.<br>Pulsa + para añadir el primero.'}</div>`);
-  const i=$('#q');i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)}
+  const g={};l.forEach(c=>{const k=ini(c.name);(g[k]=g[k]||[]).push(c)});
+  v.innerHTML=(D.contacts.length?`<input class="search" id="q" placeholder="Buscar contactos" value="${esc(q)}">`:'')+(l.length?Object.keys(g).sort().map(k=>`<div class="lt">${k}</div><div class="grp">${g[k].map(c=>`<div class="row">${av(c.name)}<div class="t" data-act="edit" data-id="${c.id}"><b>${esc(c.name)}</b><small>${esc(c.num)}</small></div><button class="cb" data-act="call" data-n="${esc(c.name)}" data-u="${esc(c.num)}" aria-label="Videollamada">${ico('video')}</button></div>`).join('')}</div>`).join(''):D.contacts.length?'<div class="empty">Sin resultados</div>':`<div class="empty"><div class="eic">${ico('users')}</div><b>Aún no tienes contactos</b><p>Guarda un número para llamar con un toque, o márcalo directamente desde el teclado.</p><button class="btn" data-act="add">Añadir contacto</button><button class="btn g" data-act="goKeypad">Marcar un número</button></div>`);
+  const i=$('#q');if(i)i.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)}
  }else if(tab==='recents'){
-  v.innerHTML=D.recents.length?D.recents.map(r=>`<div class="row"><div class="av">${ini(r.name)}</div><div class="t"><b>${esc(r.name)}</b><small>${when(r.t)} · ${r.dur?fmt(r.dur):'Sin respuesta'}</small></div><button class="cb" data-act="call" data-n="${esc(r.name)}" data-u="${esc(r.num)}">${ico('video')}</button></div>`).join('')+'<button class="btn g" data-act="clr">Borrar historial</button>':'<div class="empty">No hay llamadas recientes</div>';
+  v.innerHTML=D.recents.length?'<div class="grp">'+D.recents.map(r=>`<div class="row">${av(r.name)}<div class="t"><b>${esc(r.name)}</b><small>${when(r.t)} · ${r.dur?fmt(r.dur):'Sin respuesta'}</small></div><button class="cb" data-act="call" data-n="${esc(r.name)}" data-u="${esc(r.num)}">${ico('video')}</button></div>`).join('')+'</div><button class="btn g" data-act="clr">Borrar historial</button>':'<div class="empty">No hay llamadas recientes</div>';
  }else if(tab==='keypad'){
-  v.innerHTML=`<div class="kd">${esc(kd)||'&nbsp;'}</div><div class="pad">${'123456789*0#'.split('').map(k=>`<button data-k="${k}">${k}</button>`).join('')}</div><div class="kr"><button class="ib" data-act="ksave" aria-label="Guardar">${ico('plus')}</button><button class="cb" data-act="kcall">${ico('video')}</button><button class="ib" data-act="kdel" aria-label="Borrar">⌫</button></div>`;
+  v.innerHTML=`<div class="kd">${esc(kd)||'<span class="ph">Escribe un número</span>'}</div><div class="pad">${'123456789*0#'.split('').map(k=>`<button data-k="${k}">${k}<small>${LT[k]||' '}</small></button>`).join('')}</div><div class="kr"><button class="ib" data-act="ksave" aria-label="Guardar contacto" style="visibility:${kd?'visible':'hidden'}">${ico('plus')}</button><button class="cb big" data-act="kcall" aria-label="Llamar">${ico('video')}</button><button class="ib" data-act="kdel" aria-label="Borrar" style="visibility:${kd?'visible':'hidden'}">⌫</button></div>`;
  }else settings();
 }
 async function settings(){
@@ -39,8 +44,8 @@ async function settings(){
  <div class="sec">Audio</div><div class="set"><span>Micrófono</span><select data-s="mic">${op(mics,s.mic,'Predeterminado')}</select></div>
  <div class="set"><span>Cancelación de eco</span>${ck('echo')}</div><div class="set"><span>Volumen del tono</span><input type="range" min="0" max="100" data-s="vol" value="${s.vol}"></div><div class="set"><span>Vibración</span>${ck('vib')}</div>
  <div class="sec">Apariencia</div><div class="set"><span>Tema</span>${sel('theme',[['auto','Automático'],['dark','Oscuro'],['light','Claro']])}</div>
- <div class="sec">Datos</div><button class="btn g" data-act="perm">Revisar permisos de cámara y micrófono</button><button class="btn g d" data-act="wipe">Borrar todos los datos</button>
- <p class="empty">VideoChat Pro 2.4.1</p>`;
+ <div class="sec">Datos</div><button class="btn g" data-act="guide">Ver la guía de inicio</button><button class="btn g" data-act="perm">Revisar permisos de cámara y micrófono</button><button class="btn g d" data-act="wipe">Borrar todos los datos</button>
+ <p class="empty">VideoChat Pro 2.5.0</p>`;
 }
 document.addEventListener('input',e=>{const k=e.target.dataset.s;if(!k)return;const t=e.target;D.s[k]=t.type==='checkbox'?t.checked:t.type==='range'?+t.value:t.value;save();if(k==='theme')theme()});
 document.addEventListener('click',async e=>{
@@ -53,6 +58,8 @@ document.addEventListener('click',async e=>{
  else if(a==='kdel'){kd=kd.slice(0,-1);render()}
  else if(a==='ksave'){if(kd)modal({num:kd})}
  else if(a==='kcall'){if(kd){const c=D.contacts.find(c=>c.num.replace(/\D/g,'')===kd.replace(/\D/g,''));startCall(c?c.name:kd,kd)}}
+ else if(a==='goKeypad'){tab='keypad';render()}
+ else if(a==='guide')onb();
  else if(a==='perm')showPerm();
  else if(a==='wipe'&&confirm('¿Borrar contactos, historial y ajustes?')){localStorage.removeItem('vcp');location.reload()}
 });
@@ -61,7 +68,7 @@ function modal(c={}){
  m.innerHTML=`<div class="box"><h2>${c.id?'Editar contacto':'Nuevo contacto'}</h2><input id="mn" placeholder="Nombre" value="${esc(c.name||'')}"><input id="mu" type="tel" inputmode="tel" placeholder="Número de teléfono" value="${esc(c.num||'')}"><button class="btn" id="ms">Guardar</button>${c.id?'<button class="btn g d" id="md">Eliminar</button>':''}<button class="btn g" id="mc">Cancelar</button></div>`;
  const close=()=>m.classList.add('hide');$('#mc').onclick=close;
  $('#ms').onclick=()=>{const n=$('#mn').value.trim(),u=$('#mu').value.trim();if(!n||!/\d{3,}/.test(u))return toast('Escribe un nombre y un número válido');
-  if(c.id)Object.assign(D.contacts.find(x=>x.id===c.id),{name:n,num:u});else D.contacts.push({id:Date.now()+'',name:n,num:u});save();close();render()};
+  if(c.id)Object.assign(D.contacts.find(x=>x.id===c.id),{name:n,num:u});else{D.contacts.push({id:Date.now()+'',name:n,num:u});toast('Contacto guardado. Ya puedes llamarle con un toque')}save();close();render()};
  if(c.id)$('#md').onclick=()=>{D.contacts=D.contacts.filter(x=>x.id!==c.id);save();close();render()};
 }
 async function getStream(){
@@ -84,8 +91,8 @@ async function startCall(name,num){
  try{await getStream()}catch(e){return showPerm(true)}
  const rv=$('#rv'),c=call={name,num,t:Date.now(),timers:[],live:false,mic:true,cam:true,spk:true,dur:0};
  rv.src='videos/v'+(pick()+1)+'.mp4';rv.volume=0;rv.muted=false;rv.play().then(()=>{rv.pause();rv.currentTime=0}).catch(()=>{});
- $('#cName').textContent=name;$('#cAv').textContent=ini(name);$('#call').className='';
- $$('.ctl button').forEach(b=>{const k=b.dataset.c;b.className=k==='end'?'end':'';b.innerHTML=ico({mic:'mic',cam:'video',flip:'flip',spk:'spk',end:'end'}[k])});
+ $('#cName').textContent=name;$('#cAv').textContent=ini(name);$('#cAv').style.setProperty('--h',hue(name));$('#call').className='';
+ $$('.ctl button').forEach(b=>{const k=b.dataset.c;b.className=k==='end'?'end':'';cbtn(b,{mic:'mic',cam:'video',flip:'flip',spk:'spk',end:'end'}[k])});
  const st=t=>$('#cSt').textContent=t;st('Llamando…');ring(true);
  c.timers.push(setTimeout(()=>{ring(false);st('Conectando…');
   c.timers.push(setTimeout(()=>{
@@ -105,11 +112,40 @@ function hang(){
 }
 $('.ctl').onclick=async e=>{const b=e.target.closest('button');if(!b||!call)return;const k=b.dataset.c,c=call;
  if(k==='end')return hang();
- if(k==='mic'){c.mic=!c.mic;stream.getAudioTracks().forEach(t=>t.enabled=c.mic);b.classList.toggle('off',!c.mic);b.innerHTML=ico('mic',c.mic?'':P.slash)}
- if(k==='cam'){c.cam=!c.cam;stream.getVideoTracks().forEach(t=>t.enabled=c.cam);b.classList.toggle('off',!c.cam);b.innerHTML=ico('video',c.cam?'':P.slash)}
+ if(k==='mic'){c.mic=!c.mic;stream.getAudioTracks().forEach(t=>t.enabled=c.mic);b.classList.toggle('off',!c.mic);cbtn(b,'mic',c.mic?'':P.slash)}
+ if(k==='cam'){c.cam=!c.cam;stream.getVideoTracks().forEach(t=>t.enabled=c.cam);b.classList.toggle('off',!c.cam);cbtn(b,'video',c.cam?'':P.slash)}
  if(k==='spk'){c.spk=!c.spk;$('#rv').volume=c.spk?1:.35;b.classList.toggle('off',!c.spk)}
  if(k==='flip'){facing=facing==='user'?'environment':'user';try{await getStream();stream.getAudioTracks().forEach(t=>t.enabled=c.mic);stream.getVideoTracks().forEach(t=>t.enabled=c.cam)}catch(x){facing=facing==='user'?'environment':'user';toast('No se pudo cambiar de cámara')}}
 };
-theme();render();
-if(!localStorage.getItem('vcp-perm'))setTimeout(()=>showPerm(),400);
+Object.assign(P,{lock:'<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>'});
+function onb(){
+ const o=$('#onb'),N=4;let i=0,bad=false;
+ const ck=t=>`<li><i>${ico('check')}</i><span>${t}</span></li>`;
+ const S=[
+ `<img class="il" src="icon-512.png" alt=""><h2>Te damos la bienvenida</h2><p>Haz videollamadas desde tu móvil con un par de toques. Te explicamos cómo funciona en cuatro pasos.</p>`,
+ `<div class="two"><div><i>${ico('grid')}</i><b>Marca el número</b><small>Entra en Teclado, escríbelo y pulsa el botón verde.</small></div><div><i>${ico('users')}</i><b>Guárdalo en Contactos</b><small>Añade un nombre y un número una vez y llama con un toque.</small></div></div><h2>Dos formas de llamar</h2><p>Elige la que prefieras: las dos funcionan igual.</p>`,
+ `<div class="il ic">${ico('lock')}</div><h2>Tu privacidad primero</h2><ul class="ck">${ck('La cámara y el micrófono solo se usan mientras dura la llamada.')}${ck('No se graba nada ni se envía fuera de tu móvil.')}${ck('Puedes quitar el permiso cuando quieras desde los ajustes del móvil.')}</ul>`,
+ `<div class="il ic">${ico('video')}</div><h2>Un último paso</h2><p>Tu móvil te preguntará si permites el acceso a la cámara y al micrófono. Elige Permitir para verte durante la llamada.</p><p class="er" id="oe"></p>`];
+ o.innerHTML=`<button class="sk" data-o="skip">Saltar</button><div class="tr">${S.map(x=>`<section>${x}</section>`).join('')}</div><div class="ft"><div class="dots">${S.map(()=>'<b></b>').join('')}</div><button class="btn" data-o="next"></button><button class="btn g" data-o="skip"></button></div>`;
+ o.classList.remove('hide');
+ const fin=()=>{localStorage.setItem('vcp-onb',1);o.classList.add('hide')};
+ const r=()=>{o.querySelector('.tr').style.transform=`translateX(-${i*100}%)`;$$('#onb .dots b').forEach((d,k)=>d.className=k===i?'on':'');
+  o.querySelector('[data-o=next]').textContent=i<N-1?'Siguiente':bad?'Entrar a la app':'Permitir cámara y micrófono';
+  const sk=o.querySelector('.ft [data-o=skip]');sk.textContent='Ahora no';sk.style.display=i===N-1&&!bad?'':'none';o.querySelector('.sk').style.display=i===N-1?'none':''};
+ o.onclick=async e=>{const b=e.target.closest('[data-o]');if(!b)return;
+  if(b.dataset.o==='skip')return fin();
+  if(i<N-1){i++;return r()}
+  if(bad)return fin();
+  try{await getStream();stream.getTracks().forEach(t=>t.stop());stream=null;localStorage.setItem('vcp-perm',1);toast('Todo listo. ¡Ya puedes llamar!');fin()}
+  catch(x){bad=true;$('#oe').textContent='No pudimos activar el acceso. Puedes intentarlo más tarde en Ajustes.';r()}};
+ let x0=0;o.ontouchstart=e=>x0=e.touches[0].clientX;
+ o.ontouchend=e=>{const d=e.changedTouches[0].clientX-x0;if(d<-50&&i<N-1){i++;r()}else if(d>50&&i>0){i--;r()}};
+ r();
+}
+function intro(){
+ const sp=$('#splash');let on=true;
+ const done=()=>{if(!on)return;on=false;sp.classList.add('out');setTimeout(()=>sp.remove(),600);if(!localStorage.getItem('vcp-onb'))onb()};
+ sp.onclick=done;setTimeout(done,2800);
+}
+theme();render();intro();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http')&&location.hostname!=='localhost')navigator.serviceWorker.register('sw.js').catch(()=>{});
