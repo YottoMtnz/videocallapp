@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   apk:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +25,8 @@ jobs:
 
       - name: Preparar la web para la app
         run: |
+          ls -la
+          rm -rf www
           mkdir www
           cp -r index.html app.js style.css sw.js manifest.webmanifest icon-192.png icon-512.png videos www/
 
