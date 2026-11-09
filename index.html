@@ -1,14 +1,16 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f1520"><title>VideoChat Pro</title>
+<meta name="theme-color" content="#0a0f1d"><title>VideoChat Pro</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
-<div id="app"><header><div class="logo"></div><h1 id="ttl">Contactos</h1><button id="addTop" class="ib" data-act="add" aria-label="Añadir"></button></header>
+<div id="app"><header><img class="logo" src="icon-192.png" alt=""><h1 id="ttl">Contactos</h1><button id="addTop" class="ib" data-act="add" aria-label="Añadir"></button></header>
 <main id="view"></main>
 <nav><button data-tab="contacts"></button><button data-tab="recents"></button><button data-tab="keypad"></button><button data-tab="settings"></button></nav></div>
 <div id="perm" class="ov hide"><div class="box"><div class="big"></div><h2>Permitir cámara y micrófono</h2><p id="permTx">VideoChat Pro necesita acceso a tu cámara y micrófono para hacer videollamadas.</p><button class="btn" id="permBtn">Permitir acceso</button></div></div>
 <div id="call" class="hide"><video id="rv" playsinline></video><video id="lv" playsinline muted autoplay></video>
 <div class="top"><div class="av" id="cAv"></div><div id="cName"></div><div id="cSt"></div></div>
 <div class="ctl"><button data-c="mic"></button><button data-c="cam"></button><button data-c="flip"></button><button data-c="spk"></button><button data-c="end" class="end"></button></div></div>
+<div id="onb" class="hide"></div>
 <div id="modal" class="ov hide"></div><div id="toast"></div>
+<div id="splash"><div class="sp"><div class="mk"><i class="rp"></i><i class="rp r2"></i><svg viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#8a63ff"/></linearGradient></defs><rect class="sq" width="120" height="120" rx="30" fill="url(#g)"/><g class="gl"><rect pathLength="1" x="24" y="36" width="48" height="40" rx="12"/><path pathLength="1" d="M76 53l20-12v32L76 61z"/></g><circle class="dt" cx="96" cy="24" r="7" fill="#2fd790"/></svg></div><b>VideoChat Pro</b><span>Videollamadas sin complicaciones</span></div></div>
 <script src="app.js"></script></body></html>

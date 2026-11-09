@@ -38,9 +38,13 @@ jobs:
         run: |
           sed -i 's#</manifest>#<uses-permission android:name="android.permission.CAMERA"/><uses-permission android:name="android.permission.RECORD_AUDIO"/><uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/><uses-feature android:name="android.hardware.camera" android:required="false"/></manifest>#' android/app/src/main/AndroidManifest.xml
 
-      - name: Icono
+      - name: Colores de la barra del sistema
         continue-on-error: true
-        run: npx --yes @capacitor/assets generate --android --assetPath assets --iconBackgroundColor '#0f1520' --iconBackgroundColorDark '#0f1520'
+        run: sed -i '/name="AppTheme.NoActionBar"/a <item name="android:statusBarColor">#0a0f1d</item><item name="android:navigationBarColor">#0a0f1d</item>' android/app/src/main/res/values/styles.xml
+
+      - name: Icono y pantalla de inicio
+        continue-on-error: true
+        run: npx --yes @capacitor/assets generate --android --assetPath assets --iconBackgroundColor '#0a0f1d' --iconBackgroundColorDark '#0a0f1d' --splashBackgroundColor '#0a0f1d' --splashBackgroundColorDark '#0a0f1d'
 
       - run: npx cap sync android
 
